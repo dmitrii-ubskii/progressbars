@@ -1,4 +1,4 @@
-package com.example.myapplication;
+package com.ubskii.progressbars;
 
 import android.app.Activity;
 import android.graphics.Color;
