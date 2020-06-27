@@ -1,10 +1,10 @@
 package com.ubskii.progressbars;
 
-import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     BarsView barsView;
 
     @Override
