@@ -1,40 +1,64 @@
 package com.ubskii.progressbars;
 
 import java.util.List;
-import java.util.ArrayList;
 
-import android.graphics.Color;
+import android.content.Intent;
 import android.os.Bundle;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.database.Cursor;
+import android.view.View;
+import android.widget.Toast;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
-    public List<String> cursorToList(Cursor c) {
-        List<String> data = new ArrayList<String>();
-        if (c.getCount() > 0) {
-            while (c.moveToNext()) {
-                data.add(c.getString(c.getColumnIndex("title")) + " / " + Integer.toString((int) (100 * c.getFloat(c.getColumnIndex("fraction_done")))) + "%");
-            }
-        }
-        return data;
-    }
+    private BarViewModel viewModel;
+
+    private final int NewWordActivityRequest = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
-        ListView listView = findViewById(R.id.listView);
 
-        AppDatabase db = Room.databaseBuilder(getApplicationContext(), AppDatabase.class, "database-name")
-            .allowMainThreadQueries()  // FIXME
-            .build();
+        viewModel = new ViewModelProvider(this).get(BarViewModel.class);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, cursorToList(db.barDao().getAll()));
-        listView.setAdapter(adapter);
+        RecyclerView recyclerView = findViewById(R.id.recyclerview);
+        final BarListAdapter adapter = new BarListAdapter(this, viewModel);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        viewModel.getAllBars().observe(this, new Observer<List<Bar>>() {
+            @Override
+            public void onChanged(@Nullable final List<Bar> bars) {
+                adapter.setBars(bars);
+            }
+        });
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, NewBarActivity.class);
+                startActivityForResult(intent, NewWordActivityRequest);
+            }
+        });
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == NewWordActivityRequest && resultCode == RESULT_OK) {
+            Bar bar = new Bar();
+            bar.fractionDone = 0.0f;
+            bar.title = data.getStringExtra(NewBarActivity.ExtraReply);
+            viewModel.insert(bar);
+        } else {
+            Toast.makeText(getApplicationContext(), R.string.empty_not_saved, Toast.LENGTH_LONG).show();
+        }
     }
 }
 

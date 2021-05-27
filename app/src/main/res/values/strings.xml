@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Progress Bars</string>
+    <string name="hint_word">Title</string>
+    <string name="button_save">Save</string>
+    <string name="empty_not_saved">Empty bar title not saved</string>
+    <string name="new_bar">New bar</string>
+</resources>
+

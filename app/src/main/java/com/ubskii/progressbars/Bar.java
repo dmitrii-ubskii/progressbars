@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
-@Entity
+@Entity(tableName = "bar_database")
 public class Bar {
     @PrimaryKey(autoGenerate = true)
     public int uid;
