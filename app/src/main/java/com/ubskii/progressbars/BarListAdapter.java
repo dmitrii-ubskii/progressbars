@@ -21,6 +21,8 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
     class BarViewHolder extends RecyclerView.ViewHolder implements View.OnLongClickListener, View.OnTouchListener {
         private BarListAdapter parent;
 
+        private Bar boundBar;
+
         private final TextView title;
         private final ProgressBar progressBar;
         private final TextView percentText;
@@ -36,23 +38,8 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             }
 
             @Override
-            public boolean onDown(MotionEvent event) {
-                parent.toast(event.toString());
-                return true;
-            }
-
-            @Override
             public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                parent.toast(Float.toString(distanceX) + ", " + Float.toString(distanceY));
-                return true;
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                parent.toast(Float.toString(velocityX) + ", " + Float.toString(velocityY));
-                if (velocityX > Math.abs(velocityY) && velocityX > 10) {
-                    parent.remove();
-                }
+                parent.adjustProgress(-distanceX / 300.);
                 return true;
             }
         }
@@ -63,6 +50,7 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             progressBar = itemView.findViewById(R.id.bar);
             percentText = itemView.findViewById(R.id.percentText);
             itemView.setOnLongClickListener(this);
+            itemView.setOnTouchListener(this);
 
             gestureDetector = new GestureDetector(itemView.getContext(), new GestureListener(this));
         }
@@ -79,16 +67,29 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
-            toast(event.toString());
             this.gestureDetector.onTouchEvent(event);
             return true;
         }
 
+        public void adjustProgress(double delta) {
+            boundBar.fractionDone += delta;
+            if (boundBar.fractionDone < 0) {
+                boundBar.fractionDone = 0;
+            }
+            if (boundBar.fractionDone > 1) {
+                boundBar.fractionDone = 1;
+            }
+            progressBar.setProgress((int)(boundBar.fractionDone * 100));
+            percentText.setText(Integer.toString((int)(boundBar.fractionDone * 100)) + "%");
+            parent.notifyDataSetChanged();
+        }
+
         public void bind(BarListAdapter adapter, Bar bar) {
             parent = adapter;
-            title.setText(bar.title);
-            progressBar.setProgress((int)(bar.fractionDone * 100));
-            percentText.setText(Integer.toString((int)(bar.fractionDone * 100)) + "%");
+            boundBar = bar;
+            title.setText(boundBar.title);
+            progressBar.setProgress((int)(boundBar.fractionDone * 100));
+            percentText.setText(Integer.toString((int)(boundBar.fractionDone * 100)) + "%");
         }
 
         public void remove() {
