@@ -1,4 +1,4 @@
-package com.ubskii.progressbars;
+package space.missingtheground.progressbars;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,7 +9,7 @@ import android.widget.EditText;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class NewBarActivity extends AppCompatActivity {
-    public static final String ExtraReply = "com.ubskii.progressbars.REPLY";
+    public static final String ExtraReply = "space.missingtheground.progressbars.REPLY";
     
     private EditText editTitleView;
 

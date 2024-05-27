@@ -1,4 +1,4 @@
-package com.ubskii.progressbars;
+package space.missingtheground.progressbars;
 
 import java.lang.Float;
 import java.lang.Integer;

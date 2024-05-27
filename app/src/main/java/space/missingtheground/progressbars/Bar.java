@@ -1,4 +1,4 @@
-package com.ubskii.progressbars;
+package space.missingtheground.progressbars;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
