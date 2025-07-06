@@ -33,99 +33,13 @@ public class MainActivity extends AppCompatActivity {
 
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
 
-        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
-            Float prevX = null;
-            BarListAdapter.BarViewHolder.ResponsiveBar activeBar = null;
-
-            @Override
-            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                View child = rv.findChildViewUnder(e.getX(), e.getY());
-
-                switch (e.getAction()) {
-                    case ACTION_DOWN:
-                        if (child != null) {
-                            RecyclerView.ViewHolder holder = rv.getChildViewHolder(child);
-                            if (holder instanceof BarListAdapter.BarViewHolder) {
-                                activeBar = ((BarListAdapter.BarViewHolder)holder)
-                                    .findSwipableBar(e.getX(), e.getY());
-                                if (activeBar != null) {
-                                    prevX = e.getX();
-                                }
-                            }
-                        }
-                        break;
-                    case ACTION_MOVE:
-                        if (activeBar != null && prevX != null) {
-                            activeBar.adjustProgress(prevX, e.getX());
-                            prevX = e.getX();
-                        }
-                        break;
-                    case ACTION_UP: case ACTION_CANCEL:
-                        if (activeBar != null) {
-                            activeBar.doneSwiping();
-                        }
-                        prevX = null;
-                        activeBar = null;
-                        break;
-                }
-
-                return false; // allow other touch events (e.g., vertical scrolling) to continue
-            }
-
-            @Override public void onTouchEvent(RecyclerView rv, MotionEvent e) {}
-
-            @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
-        });
+        recyclerView.addOnItemTouchListener(new TouchListener());
 
         adapter = new BarListAdapter(this, viewModel);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
-            new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
-
-                @Override
-                public boolean onMove(RecyclerView recyclerView,
-                    RecyclerView.ViewHolder viewHolder,
-                    RecyclerView.ViewHolder target) {
-                    int fromPos = viewHolder.getAdapterPosition();
-                    int toPos = target.getAdapterPosition();
-
-                    // Swap data in your adapter
-                    adapter.swapItems(fromPos, toPos);
-
-                    // Notify adapter of item moved
-                    adapter.notifyItemMoved(fromPos, toPos);
-                    return true;
-                }
-
-                @Override
-                public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
-                    super.onSelectedChanged(viewHolder, actionState);
-
-                    if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && viewHolder != null) {
-                        viewHolder.itemView.setScaleX(1.05f);
-                        viewHolder.itemView.setScaleY(1.05f);
-                    }
-                }
-
-                @Override
-                public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-                    super.clearView(recyclerView, viewHolder);
-                    viewHolder.itemView.setScaleX(1f);
-                    viewHolder.itemView.setScaleY(1f);
-                    adapter.onDragStop();
-                }
-
-                @Override
-                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {}
-
-                @Override
-                public boolean isLongPressDragEnabled() {
-                    return true;
-                }
-            }
-        );
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new TouchCallback());
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
         recyclerView.requestDisallowInterceptTouchEvent(true);
@@ -175,6 +89,97 @@ public class MainActivity extends AppCompatActivity {
         bar.progress = bundle.getInt("progress", 0);
         bar.targetTotal = bundle.getInt("total", 100);
         return bar;
+    }
+
+    class TouchListener implements RecyclerView.OnItemTouchListener {
+        Float prevX = null;
+        BarListAdapter.BarViewHolder.ResponsiveBar activeBar = null;
+
+        @Override
+        public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+            View child = rv.findChildViewUnder(e.getX(), e.getY());
+
+            switch (e.getAction()) {
+                case ACTION_DOWN:
+                if (child != null) {
+                    RecyclerView.ViewHolder holder = rv.getChildViewHolder(child);
+                    if (holder instanceof BarListAdapter.BarViewHolder) {
+                        activeBar = ((BarListAdapter.BarViewHolder)holder)
+                        .findSwipableBar(e.getX(), e.getY());
+                        if (activeBar != null) {
+                            prevX = e.getX();
+                        }
+                    }
+                }
+                break;
+                case ACTION_MOVE:
+                if (activeBar != null && prevX != null) {
+                    activeBar.adjustProgress(prevX, e.getX());
+                    prevX = e.getX();
+                }
+                break;
+                case ACTION_UP: case ACTION_CANCEL:
+                if (activeBar != null) {
+                    activeBar.doneSwiping();
+                }
+                prevX = null;
+                activeBar = null;
+                break;
+            }
+
+            return false; // allow other touch events (e.g., vertical scrolling) to continue
+        }
+
+        @Override public void onTouchEvent(RecyclerView rv, MotionEvent e) {}
+
+        @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
+    }
+
+    class TouchCallback extends ItemTouchHelper.SimpleCallback {
+        TouchCallback() {
+            super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0);
+        }
+
+        @Override
+        public boolean onMove(RecyclerView recyclerView,
+            RecyclerView.ViewHolder viewHolder,
+            RecyclerView.ViewHolder target) {
+            int fromPos = viewHolder.getAdapterPosition();
+            int toPos = target.getAdapterPosition();
+
+            // Swap data in your adapter
+            adapter.swapItems(fromPos, toPos);
+
+            // Notify adapter of item moved
+            adapter.notifyItemMoved(fromPos, toPos);
+            return true;
+        }
+
+        @Override
+        public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+            super.onSelectedChanged(viewHolder, actionState);
+
+            if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && viewHolder != null) {
+                viewHolder.itemView.setScaleX(1.05f);
+                viewHolder.itemView.setScaleY(1.05f);
+            }
+        }
+
+        @Override
+        public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+            super.clearView(recyclerView, viewHolder);
+            viewHolder.itemView.setScaleX(1f);
+            viewHolder.itemView.setScaleY(1f);
+            adapter.onDragStop();
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {}
+
+        @Override
+        public boolean isLongPressDragEnabled() {
+            return true;
+        }
     }
 }
 
