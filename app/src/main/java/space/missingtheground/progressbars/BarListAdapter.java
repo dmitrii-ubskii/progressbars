@@ -36,10 +36,6 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             percentText = itemView.findViewById(R.id.percentText);
         }
 
-        public void toast(String s) {
-            Toast.makeText(title.getContext(), title.getText() + " / " + s, Toast.LENGTH_LONG).show();
-        }
-
         private Float swipeAmount = null;
         private Integer startProgress = null;
 
@@ -63,13 +59,12 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             percentText.setText(boundBar.progress + " / " + boundBar.targetTotal);
 
             prevX = newX;
-
-            viewModel.update(boundBar);
         }
 
         public void doneSwiping() {
             swipeAmount = null;
             startProgress = null;
+            viewModel.update(boundBar);
         }
 
         public void bind(BarListAdapter adapter, Bar bar) {
