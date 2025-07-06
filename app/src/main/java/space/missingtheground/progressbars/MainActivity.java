@@ -11,6 +11,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -78,10 +79,55 @@ public class MainActivity extends AppCompatActivity {
             @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
         });
 
-
         final BarListAdapter adapter = new BarListAdapter(this, viewModel);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(
+            new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) {
+
+                @Override
+                public boolean onMove(RecyclerView recyclerView,
+                    RecyclerView.ViewHolder viewHolder,
+                    RecyclerView.ViewHolder target) {
+                    int fromPos = viewHolder.getAdapterPosition();
+                    int toPos = target.getAdapterPosition();
+
+                    // Swap data in your adapter
+                    adapter.swapItems(fromPos, toPos);
+
+                    // Notify adapter of item moved
+                    adapter.notifyItemMoved(fromPos, toPos);
+                    return true;
+                }
+
+                @Override
+                public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+                    super.onSelectedChanged(viewHolder, actionState);
+
+                    if (actionState == ItemTouchHelper.ACTION_STATE_DRAG && viewHolder != null) {
+                        viewHolder.itemView.setScaleX(1.05f);
+                        viewHolder.itemView.setScaleY(1.05f);
+                    }
+                }
+
+                @Override
+                public void clearView(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                    super.clearView(recyclerView, viewHolder);
+                    viewHolder.itemView.setScaleX(1f);
+                    viewHolder.itemView.setScaleY(1f);
+                }
+
+                @Override
+                public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {}
+
+                @Override
+                public boolean isLongPressDragEnabled() {
+                    return true;
+                }
+            }
+        );
+        itemTouchHelper.attachToRecyclerView(recyclerView);
 
         recyclerView.requestDisallowInterceptTouchEvent(true);
         viewModel.getAllBars().observe(this, new Observer<List<Bar>>() {

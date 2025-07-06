@@ -95,6 +95,10 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
         notifyDataSetChanged();
     }
 
+    public void swapItems(int fromPos, int toPos) {
+        Collections.swap(bars, fromPos, toPos);
+    }
+
     void remove(int position) {
         viewModel.delete(bars.get(position));
         notifyDataSetChanged();
