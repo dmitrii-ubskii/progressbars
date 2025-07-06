@@ -52,6 +52,8 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             percentText.setText((int)(boundBar.fractionDone * 100) + "%");
 
             prevX = newX;
+
+            viewModel.update(boundBar);
         }
 
         public void bind(BarListAdapter adapter, Bar bar) {
@@ -97,6 +99,12 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
     public void swapItems(int fromPos, int toPos) {
         Collections.swap(bars, fromPos, toPos);
+        bars.get(fromPos).listPosition = fromPos;
+        bars.get(toPos).listPosition = toPos;
+    }
+
+    public void onDragStop() {
+        viewModel.updateAll(bars);
     }
 
     void remove(int position) {

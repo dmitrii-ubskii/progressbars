@@ -28,4 +28,12 @@ public class BarViewModel extends AndroidViewModel {
     public void delete(Bar bar) {
         repository.delete(bar);
     }
+
+    public void update(Bar bar) {
+        repository.update(bar);
+    }
+
+    public void updateAll(List<Bar> bars) {
+        repository.updateAll(bars);
+    }
 } 

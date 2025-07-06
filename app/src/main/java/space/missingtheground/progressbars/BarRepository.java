@@ -30,4 +30,16 @@ class BarRepository {
             barDao.delete(bar);
         });
     }
+
+    void update(Bar bar) {
+        BarDatabase.databaseWriteExecutor.execute(() -> {
+            barDao.update(bar);
+        });
+    }
+
+    void updateAll(List<Bar> bars) {
+        BarDatabase.databaseWriteExecutor.execute(() -> {
+            barDao.updateAll(bars);
+        });
+    }
 }

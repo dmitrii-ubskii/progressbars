@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
                     super.clearView(recyclerView, viewHolder);
                     viewHolder.itemView.setScaleX(1f);
                     viewHolder.itemView.setScaleY(1f);
+                    adapter.onDragStop();
                 }
 
                 @Override

@@ -14,4 +14,7 @@ public class Bar {
 
     @ColumnInfo(name = "fraction_done")
     public float fractionDone;
+
+    @ColumnInfo(name = "list_position")
+    public int listPosition;
 }
