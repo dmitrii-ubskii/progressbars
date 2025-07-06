@@ -10,12 +10,15 @@ import java.util.List;
 import java.util.Map;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -97,10 +100,35 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
         private BarListAdapter parent;
 
         private final LinearLayout childrenContainer;
+        private final ImageButton menuButton;
 
         private BarViewHolder(View itemView) {
             super(itemView);
             childrenContainer = itemView.findViewById(R.id.childrenContainer);
+            menuButton = itemView.findViewById(R.id.menuButton);
+
+            menuButton.setOnClickListener(v -> {
+                PopupMenu popup = new PopupMenu(itemView.getContext(), menuButton);
+                popup.getMenuInflater().inflate(R.menu.bar_options_menu, popup.getMenu());
+
+                popup.setOnMenuItemClickListener(item -> {
+                    switch (item.getItemId()) {
+                        case R.id.menu_edit:
+                            // TODO
+                            return true;
+                        case R.id.menu_delete:
+                            for (ResponsiveBar child : childBars) {
+                                viewModel.delete(child.bar);
+                            }
+                            viewModel.delete(boundBar.bar);
+                            return true;
+                        default:
+                            return false;
+                    }
+                });
+
+                popup.show();
+            });
         }
 
         public void bind(BarListAdapter adapter, Bar bar) {
