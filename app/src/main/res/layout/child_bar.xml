@@ -2,14 +2,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" 
-    android:padding="5dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/textView"
-        style="@style/word_title"
-        android:paddingBottom="5dp"
+        style="@style/child_bar"
         android:singleLine="true"
         android:ellipsize="end"
         android:layout_width="match_parent"
@@ -28,18 +26,18 @@
             android:id="@+id/bar"
             style="?android:attr/progressBarStyleHorizontal"
             android:scaleY="12"
-            android:layout_marginTop="1dp"
+            android:layout_marginTop="0dp"
             android:layout_gravity="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
 
         <TextView
             android:id="@+id/percentText"
-            style="@style/word_title"
+            style="@style/child_bar"
             android:singleLine="true"
             android:ellipsize="end"
             android:gravity="center"
-            android:layout_margin="5dp"
+            android:layout_margin="3dp"
             android:layout_gravity="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

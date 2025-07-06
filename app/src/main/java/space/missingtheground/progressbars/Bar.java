@@ -15,10 +15,6 @@ public class Bar {
     public int listPosition;
     public Long parent; // null if this is a main bar
 
-    public boolean isEditable() {
-        return parent == null;
-    }
-
     public int percentProgress() {
         return 100 * progress / targetTotal;
     }

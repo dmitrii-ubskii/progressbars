@@ -25,62 +25,90 @@ import static android.view.MotionEvent.*;
 
 public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewHolder> {
     class BarViewHolder extends RecyclerView.ViewHolder {
+        class ResponsiveBar {
+            Bar bar;
+
+            private final TextView title;
+            private final ProgressBar progressBar;
+            private final TextView percentText;
+
+            private Float swipeAmount = null;
+            private Integer startProgress = null;
+
+            ResponsiveBar(View itemView, Bar bar_) {
+                bar = bar_;
+
+                title = itemView.findViewById(R.id.textView);
+                progressBar = itemView.findViewById(R.id.bar);
+                percentText = itemView.findViewById(R.id.percentText);
+
+                title.setText(bar.title);
+                progressBar.setProgress(bar.percentProgress());
+                percentText.setText(bar.progress + " / " + bar.targetTotal);
+            }
+
+            public void adjustProgress(float prevX, float newX) {
+                if (swipeAmount == null) {
+                    swipeAmount = 0.0f;
+                }
+                if (startProgress == null) {
+                    startProgress = bar.progress;
+                }
+
+                float deltaX = newX - prevX;
+                float width = itemView.getWidth();
+
+                float deltaProgress = deltaX / width;
+                swipeAmount += deltaProgress;
+                bar.progress = startProgress + (int)(swipeAmount * bar.targetTotal);
+                bar.progress = Math.max(0, Math.min(bar.targetTotal, bar.progress));
+
+                progressBar.setProgress(bar.percentProgress());
+                percentText.setText(bar.progress + " / " + bar.targetTotal);
+
+                prevX = newX;
+
+                boundBar.updateTotal();
+            }
+
+            public void doneSwiping() {
+                swipeAmount = null;
+                startProgress = null;
+                viewModel.update(bar);
+                if (this != boundBar) {
+                    viewModel.update(boundBar.bar);
+                }
+            }
+
+            void updateTotal() {
+                if (childBars.size() != 0) {
+                    bar.progress = 0;
+                    for (ResponsiveBar child : childBars) {
+                        bar.progress += child.bar.progress;
+                    }
+                    progressBar.setProgress(bar.percentProgress());
+                    percentText.setText(bar.progress + " / " + bar.targetTotal);
+                }
+            }
+        }
+
+        private ResponsiveBar boundBar;
+        private List<ResponsiveBar> childBars;
         private BarListAdapter parent;
 
-        private Bar boundBar;
-
-        private final TextView title;
-        private final ProgressBar progressBar;
-        private final TextView percentText;
         private final LinearLayout childrenContainer;
 
         private BarViewHolder(View itemView) {
             super(itemView);
-            title = itemView.findViewById(R.id.textView);
-            progressBar = itemView.findViewById(R.id.bar);
-            percentText = itemView.findViewById(R.id.percentText);
             childrenContainer = itemView.findViewById(R.id.childrenContainer);
-        }
-
-        private Float swipeAmount = null;
-        private Integer startProgress = null;
-
-        public void adjustProgress(float prevX, float newX) {
-            if (swipeAmount == null) {
-                swipeAmount = 0.0f;
-            }
-            if (startProgress == null) {
-                startProgress = boundBar.progress;
-            }
-
-            float deltaX = newX - prevX;
-            float width = itemView.getWidth();
-
-            float deltaProgress = deltaX / width;
-            swipeAmount += deltaProgress;
-            boundBar.progress = startProgress + (int)(swipeAmount * boundBar.targetTotal);
-            boundBar.progress = Math.max(0, Math.min(boundBar.targetTotal, boundBar.progress));
-
-            progressBar.setProgress(boundBar.percentProgress());
-            percentText.setText(boundBar.progress + " / " + boundBar.targetTotal);
-
-            prevX = newX;
-        }
-
-        public void doneSwiping() {
-            swipeAmount = null;
-            startProgress = null;
-            viewModel.update(boundBar);
         }
 
         public void bind(BarListAdapter adapter, Bar bar) {
             parent = adapter;
-            boundBar = bar;
-            title.setText(boundBar.title);
-            progressBar.setProgress(boundBar.percentProgress());
-            percentText.setText(boundBar.progress + " / " + boundBar.targetTotal);
+            boundBar = new ResponsiveBar(itemView, bar);
 
             List<Bar> children = childrenMap.get(bar.uid);
+            childBars = new ArrayList<>();
             childrenContainer.removeAllViews();
             if (children == null) {
                 childrenContainer.setVisibility(View.GONE);
@@ -89,18 +117,32 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
                 for (Bar child : children) {
                     View subView = LayoutInflater.from(itemView.getContext())
                         .inflate(R.layout.child_bar, childrenContainer, false);
-                     ((TextView)subView.findViewById(R.id.textView)).setText(child.title);
-                     ((ProgressBar)subView.findViewById(R.id.bar))
-                        .setProgress(child.percentProgress());
-                     ((TextView)subView.findViewById(R.id.percentText))
-                        .setText(child.progress + " / " + child.targetTotal);
+                    childBars.add(new ResponsiveBar(subView, child));
                     childrenContainer.addView(subView);
                 }
             }
         }
 
-        public void remove() {
-            parent.remove(getAdapterPosition());
+        public ResponsiveBar findSwipableBar(float x, float y) {
+            if (childBars.size() == 0) {
+                View bar = itemView.findViewById(R.id.barLayout);
+                int top = itemView.getTop() + bar.getTop();
+                int bottom = top + bar.getHeight();
+                if (y >= top && y <= bottom) {
+                    return boundBar;
+                }
+            } else {
+                int childrenContainerTop = itemView.getTop() + childrenContainer.getTop();
+                for (int i = 0; i < childBars.size(); i++) {
+                    View bar = childrenContainer.getChildAt(i);
+                    int top = childrenContainerTop + bar.getTop();
+                    int bottom = top + bar.getHeight();
+                    if (y >= top && y <= bottom) {
+                        return childBars.get(i);
+                    }
+                }
+            }
+            return null;
         }
     }
 
@@ -149,11 +191,6 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
     public void onDragStop() {
         viewModel.updateAll(bars);
-    }
-
-    void remove(int position) {
-        viewModel.delete(bars.get(position));
-        notifyDataSetChanged();
     }
 
     @Override

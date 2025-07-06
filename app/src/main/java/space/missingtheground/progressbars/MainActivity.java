@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
             Float prevX = null;
-            BarListAdapter.BarViewHolder activeHolder = null;
+            BarListAdapter.BarViewHolder.ResponsiveBar activeBar = null;
 
             @Override
             public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
@@ -46,32 +46,26 @@ public class MainActivity extends AppCompatActivity {
                         if (child != null) {
                             RecyclerView.ViewHolder holder = rv.getChildViewHolder(child);
                             if (holder instanceof BarListAdapter.BarViewHolder) {
-                                View bar = child.findViewById(R.id.barLayout);
-
-                                float y = e.getY();
-
-                                int top = child.getTop() + bar.getTop();
-                                int bottom = top + bar.getHeight();
-
-                                if (y >= top && y <= bottom) {
+                                activeBar = ((BarListAdapter.BarViewHolder)holder)
+                                    .findSwipableBar(e.getX(), e.getY());
+                                if (activeBar != null) {
                                     prevX = e.getX();
-                                    activeHolder = (BarListAdapter.BarViewHolder) holder;
                                 }
                             }
                         }
                         break;
                     case ACTION_MOVE:
-                        if (activeHolder != null && prevX != null) {
-                            activeHolder.adjustProgress(prevX, e.getX());
+                        if (activeBar != null && prevX != null) {
+                            activeBar.adjustProgress(prevX, e.getX());
                             prevX = e.getX();
                         }
                         break;
                     case ACTION_UP: case ACTION_CANCEL:
-                        if (activeHolder != null) {
-                            activeHolder.doneSwiping();
+                        if (activeBar != null) {
+                            activeBar.doneSwiping();
                         }
                         prevX = null;
-                        activeHolder = null;
+                        activeBar = null;
                         break;
                 }
 
