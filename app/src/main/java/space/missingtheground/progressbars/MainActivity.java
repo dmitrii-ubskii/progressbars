@@ -21,7 +21,7 @@ import static android.view.MotionEvent.*;
 public class MainActivity extends AppCompatActivity {
     private BarViewModel viewModel;
 
-    private final int NewWordActivityRequest = 1;
+    private final int EditBarActivityRequest = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -145,24 +145,40 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, NewBarActivity.class);
-                startActivityForResult(intent, NewWordActivityRequest);
+                Intent intent = new Intent(MainActivity.this, EditBarActivity.class);
+                startActivityForResult(intent, EditBarActivityRequest);
             }
         });
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == EditBarActivityRequest && resultCode == RESULT_OK) {
+            Bundle barData = data.getBundleExtra("barData");
+            if (barData == null) {
+                return;
+            }
+            Bar mainBar = unbundle(barData);
+            viewModel.insert(mainBar);
 
-        if (requestCode == NewWordActivityRequest && resultCode == RESULT_OK) {
-            Bar bar = new Bar();
-            bar.progress = 0;
-            bar.targetTotal = 100;
-            bar.title = data.getStringExtra(NewBarActivity.ExtraReply);
-            viewModel.insert(bar);
-        } else {
-            Toast.makeText(getApplicationContext(), R.string.empty_not_saved, Toast.LENGTH_LONG).show();
+            List<Bundle> children = barData.getParcelableArrayList("children");
+            if (children != null) {
+                for (int i = 0; i < children.size(); i++) {
+                    Bar child = unbundle(children.get(i));
+                    child.parent = mainBar.uid;
+                    child.listPosition = i;
+                    viewModel.insert(child);
+                }
+            }
         }
+    }
+
+    Bar unbundle(Bundle bundle) {
+        Bar bar = new Bar();
+        bar.title = bundle.getString("title", "Untitled");
+        bar.progress = bundle.getInt("progress", 0);
+        bar.targetTotal = bundle.getInt("total", 100);
+        return bar;
     }
 }
 
