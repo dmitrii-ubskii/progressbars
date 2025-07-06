@@ -153,7 +153,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == NewWordActivityRequest && resultCode == RESULT_OK) {
             Bar bar = new Bar();
-            bar.fractionDone = 0.0f;
+            bar.progress = 0;
+            bar.targetTotal = 100;
             bar.title = data.getStringExtra(NewBarActivity.ExtraReply);
             viewModel.insert(bar);
         } else {

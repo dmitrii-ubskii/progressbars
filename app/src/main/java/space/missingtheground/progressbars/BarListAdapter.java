@@ -42,14 +42,14 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
         public void adjustProgress(float prevX, float newX) {
             float deltaX = newX - prevX;
-            float width = itemView.getWidth(); // get width of the whole item view
+            float width = itemView.getWidth();
 
-            float deltaProgress = deltaX / width; // normalize by width
-            boundBar.fractionDone += deltaProgress;
-            boundBar.fractionDone = Math.max(0f, Math.min(1f, boundBar.fractionDone));
+            float deltaProgress = (int)(deltaX / width * boundBar.targetTotal);
+            boundBar.progress += deltaProgress;
+            boundBar.progress = Math.max(0, Math.min(boundBar.targetTotal, boundBar.progress));
 
-            progressBar.setProgress((int)(boundBar.fractionDone * 100));
-            percentText.setText((int)(boundBar.fractionDone * 100) + "%");
+            progressBar.setProgress(boundBar.percentProgress());
+            percentText.setText(boundBar.progress + " / " + boundBar.targetTotal);
 
             prevX = newX;
 
@@ -60,8 +60,8 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             parent = adapter;
             boundBar = bar;
             title.setText(boundBar.title);
-            progressBar.setProgress((int)(boundBar.fractionDone * 100));
-            percentText.setText(Integer.toString((int)(boundBar.fractionDone * 100)) + "%");
+            progressBar.setProgress(boundBar.percentProgress());
+            percentText.setText(boundBar.progress + " / " + boundBar.targetTotal);
         }
 
         public void remove() {
