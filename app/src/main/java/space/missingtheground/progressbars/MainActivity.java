@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private BarViewModel viewModel;
 
     private final int EditBarActivityRequest = 1;
+    private BarListAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
         });
 
-        final BarListAdapter adapter = new BarListAdapter(this, viewModel);
+        adapter = new BarListAdapter(this, viewModel);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -159,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             Bar mainBar = unbundle(barData);
+            mainBar.listPosition = adapter.getItemCount();
             viewModel.insert(mainBar);
 
             List<Bundle> children = barData.getParcelableArrayList("children");
