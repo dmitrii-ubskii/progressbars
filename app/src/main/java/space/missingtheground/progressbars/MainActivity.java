@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.Nullable;
@@ -13,6 +14,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import static android.view.MotionEvent.*;
 
 public class MainActivity extends AppCompatActivity {
     private BarViewModel viewModel;
@@ -27,10 +30,60 @@ public class MainActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(BarViewModel.class);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerview);
+
+        recyclerView.addOnItemTouchListener(new RecyclerView.OnItemTouchListener() {
+            Float prevX = null;
+            BarListAdapter.BarViewHolder activeHolder = null;
+
+            @Override
+            public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                View child = rv.findChildViewUnder(e.getX(), e.getY());
+
+                switch (e.getAction()) {
+                    case ACTION_DOWN:
+                        if (child != null) {
+                            RecyclerView.ViewHolder holder = rv.getChildViewHolder(child);
+                            if (holder instanceof BarListAdapter.BarViewHolder) {
+                                View bar = child.findViewById(R.id.barLayout);
+
+                                float y = e.getY();
+
+                                int top = child.getTop() + bar.getTop();
+                                int bottom = top + bar.getHeight();
+
+                                if (y >= top && y <= bottom) {
+                                    prevX = e.getX();
+                                    activeHolder = (BarListAdapter.BarViewHolder) holder;
+                                }
+                            }
+                        }
+                        break;
+                    case ACTION_MOVE:
+                        if (activeHolder != null && prevX != null) {
+                            activeHolder.adjustProgress(prevX, e.getX());
+                            prevX = e.getX();
+                        }
+                        break;
+                    case ACTION_UP: case ACTION_CANCEL:
+                        prevX = null;
+                        activeHolder = null;
+                        break;
+                }
+
+                return false; // allow other touch events (e.g., vertical scrolling) to continue
+            }
+
+            @Override public void onTouchEvent(RecyclerView rv, MotionEvent e) {}
+
+            @Override public void onRequestDisallowInterceptTouchEvent(boolean disallowIntercept) {}
+        });
+
+
         final BarListAdapter adapter = new BarListAdapter(this, viewModel);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        recyclerView.requestDisallowInterceptTouchEvent(true);
         viewModel.getAllBars().observe(this, new Observer<List<Bar>>() {
             @Override
             public void onChanged(@Nullable final List<Bar> bars) {
