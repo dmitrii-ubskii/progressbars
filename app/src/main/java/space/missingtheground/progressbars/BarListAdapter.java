@@ -40,12 +40,23 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             Toast.makeText(title.getContext(), title.getText() + " / " + s, Toast.LENGTH_LONG).show();
         }
 
+        private Float swipeAmount = null;
+        private Integer startProgress = null;
+
         public void adjustProgress(float prevX, float newX) {
+            if (swipeAmount == null) {
+                swipeAmount = 0.0f;
+            }
+            if (startProgress == null) {
+                startProgress = boundBar.progress;
+            }
+
             float deltaX = newX - prevX;
             float width = itemView.getWidth();
 
-            float deltaProgress = (int)(deltaX / width * boundBar.targetTotal);
-            boundBar.progress += deltaProgress;
+            float deltaProgress = deltaX / width;
+            swipeAmount += deltaProgress;
+            boundBar.progress = startProgress + (int)(swipeAmount * boundBar.targetTotal);
             boundBar.progress = Math.max(0, Math.min(boundBar.targetTotal, boundBar.progress));
 
             progressBar.setProgress(boundBar.percentProgress());
@@ -54,6 +65,11 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             prevX = newX;
 
             viewModel.update(boundBar);
+        }
+
+        public void doneSwiping() {
+            swipeAmount = null;
+            startProgress = null;
         }
 
         public void bind(BarListAdapter adapter, Bar bar) {

@@ -66,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                         break;
                     case ACTION_UP: case ACTION_CANCEL:
+                        if (activeHolder != null) {
+                            activeHolder.doneSwiping();
+                        }
                         prevX = null;
                         activeHolder = null;
                         break;
