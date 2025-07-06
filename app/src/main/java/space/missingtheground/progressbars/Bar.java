@@ -7,13 +7,13 @@ import androidx.room.PrimaryKey;
 @Entity(tableName = "bar_database")
 public class Bar {
     @PrimaryKey(autoGenerate = true)
-    public int uid;
+    public long uid;
 
     public String title;
     public int progress;
     public int targetTotal;
     public int listPosition;
-    public Integer parent; // null if this is a main bar
+    public Long parent; // null if this is a main bar
 
     public boolean isEditable() {
         return parent == null;

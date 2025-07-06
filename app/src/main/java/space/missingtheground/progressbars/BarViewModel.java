@@ -22,7 +22,11 @@ public class BarViewModel extends AndroidViewModel {
     }
 
     public void insert(Bar bar) {
-        repository.insert(bar);
+        repository.insert(bar, null);
+    }
+
+    public void insert(Bar bar, Runnable callback) {
+        repository.insert(bar, callback);
     }
 
     public void delete(Bar bar) {

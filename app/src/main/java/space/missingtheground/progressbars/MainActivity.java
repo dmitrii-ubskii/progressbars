@@ -161,17 +161,17 @@ public class MainActivity extends AppCompatActivity {
             }
             Bar mainBar = unbundle(barData);
             mainBar.listPosition = adapter.getItemCount();
-            viewModel.insert(mainBar);
-
-            List<Bundle> children = barData.getParcelableArrayList("children");
-            if (children != null) {
-                for (int i = 0; i < children.size(); i++) {
-                    Bar child = unbundle(children.get(i));
-                    child.parent = mainBar.uid;
-                    child.listPosition = i;
-                    viewModel.insert(child);
+            viewModel.insert(mainBar, () -> {
+                List<Bundle> children = barData.getParcelableArrayList("children");
+                if (children != null) {
+                    for (int i = 0; i < children.size(); i++) {
+                        Bar child = unbundle(children.get(i));
+                        child.parent = mainBar.uid;
+                        child.listPosition = i;
+                        viewModel.insert(child);
+                    }
                 }
-            }
+            });
         }
     }
 

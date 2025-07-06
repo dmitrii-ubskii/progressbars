@@ -3,8 +3,11 @@ package space.missingtheground.progressbars;
 import java.lang.Float;
 import java.lang.Integer;
 import java.lang.Math;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.content.Context;
 import android.view.GestureDetector;
@@ -12,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,12 +32,14 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
         private final TextView title;
         private final ProgressBar progressBar;
         private final TextView percentText;
+        private final LinearLayout childrenContainer;
 
         private BarViewHolder(View itemView) {
             super(itemView);
             title = itemView.findViewById(R.id.textView);
             progressBar = itemView.findViewById(R.id.bar);
             percentText = itemView.findViewById(R.id.percentText);
+            childrenContainer = itemView.findViewById(R.id.childrenContainer);
         }
 
         private Float swipeAmount = null;
@@ -73,6 +79,24 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             title.setText(boundBar.title);
             progressBar.setProgress(boundBar.percentProgress());
             percentText.setText(boundBar.progress + " / " + boundBar.targetTotal);
+
+            List<Bar> children = childrenMap.get(bar.uid);
+            childrenContainer.removeAllViews();
+            if (children == null) {
+                childrenContainer.setVisibility(View.GONE);
+            } else {
+                childrenContainer.setVisibility(View.VISIBLE);
+                for (Bar child : children) {
+                    View subView = LayoutInflater.from(itemView.getContext())
+                        .inflate(R.layout.child_bar, childrenContainer, false);
+                     ((TextView)subView.findViewById(R.id.textView)).setText(child.title);
+                     ((ProgressBar)subView.findViewById(R.id.bar))
+                        .setProgress(child.percentProgress());
+                     ((TextView)subView.findViewById(R.id.percentText))
+                        .setText(child.progress + " / " + child.targetTotal);
+                    childrenContainer.addView(subView);
+                }
+            }
         }
 
         public void remove() {
@@ -82,6 +106,7 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
     private final LayoutInflater inflater;
     private List<Bar> bars;
+    private Map<Long, List<Bar>> childrenMap;
 
     private BarViewModel viewModel;
 
@@ -104,7 +129,15 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
     }
 
     void setBars(List<Bar> bars_) {
-        bars = bars_;
+        bars = new ArrayList<>();
+        childrenMap = new HashMap<>();
+        for (Bar bar : bars_) {
+            if (bar.parent == null) {
+                bars.add(bar);
+            } else {
+                childrenMap.computeIfAbsent(bar.parent, p -> new ArrayList<>()).add(bar);
+            }
+        }
         notifyDataSetChanged();
     }
 
@@ -125,9 +158,11 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
     @Override
     public int getItemCount() {
-        if (bars != null)
+        if (bars != null) {
             return bars.size();
-        else return 0;
+        } else {
+            return 0;
+        }
     }
 }
 

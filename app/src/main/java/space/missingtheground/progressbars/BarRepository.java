@@ -19,9 +19,13 @@ class BarRepository {
         return allBars;
     }
 
-    void insert(Bar bar) {
+    void insert(Bar bar, Runnable callback) {
         BarDatabase.databaseWriteExecutor.execute(() -> {
-            barDao.insert(bar);
+            long uid = barDao.insert(bar);
+            bar.uid = uid;
+            if (callback != null) {
+                callback.run();
+            }
         });
     }
 

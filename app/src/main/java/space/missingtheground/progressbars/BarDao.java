@@ -13,14 +13,11 @@ import androidx.room.Transaction;
 
 @Dao
 public interface BarDao {
-    @Query("SELECT * FROM bar_database WHERE parent is NULL ORDER BY listPosition ASC")
+    @Query("SELECT * FROM bar_database ORDER BY listPosition ASC")
     LiveData<List<Bar>> getAll();
 
-    @Query("SELECT * FROM bar_database WHERE parent = :parent ORDER BY listPosition ASC")
-    List<Bar> getChildren(int parent);
-
     @Insert
-    void insert(Bar bars);
+    long insert(Bar bars);
 
     @Delete
     void delete(Bar bar);
