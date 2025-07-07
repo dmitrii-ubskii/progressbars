@@ -34,7 +34,11 @@ public class BarViewModel extends AndroidViewModel {
     }
 
     public void update(Bar bar) {
-        repository.update(bar);
+        repository.update(bar, null);
+    }
+
+    public void update(Bar bar, Runnable callback) {
+        repository.update(bar, callback);
     }
 
     public void updateAll(List<Bar> bars) {

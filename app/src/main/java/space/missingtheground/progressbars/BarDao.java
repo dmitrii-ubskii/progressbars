@@ -16,6 +16,12 @@ public interface BarDao {
     @Query("SELECT * FROM bar_database ORDER BY listPosition ASC")
     LiveData<List<Bar>> getAll();
 
+    @Query("SELECT * FROM bar_database WHERE uid = :id")
+    Bar getById(long id);
+
+    @Query("SELECT * FROM bar_database WHERE parent = :parent ORDER BY listPosition ASC")
+    List<Bar> getChildren(int parent);
+
     @Insert
     long insert(Bar bars);
 

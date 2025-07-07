@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -47,7 +48,7 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
                 title.setText(bar.title);
                 progressBar.setProgress(bar.percentProgress());
-                percentText.setText(bar.progress + " / " + bar.targetTotal);
+                percentText.setText(bar.progress + " / " + bar.total);
             }
 
             public void adjustProgress(float prevX, float newX) {
@@ -63,11 +64,11 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
                 float deltaProgress = deltaX / width;
                 swipeAmount += deltaProgress;
-                bar.progress = startProgress + (int)(swipeAmount * bar.targetTotal);
-                bar.progress = Math.max(0, Math.min(bar.targetTotal, bar.progress));
+                bar.progress = startProgress + (int)(swipeAmount * bar.total);
+                bar.progress = Math.max(0, Math.min(bar.total, bar.progress));
 
                 progressBar.setProgress(bar.percentProgress());
-                percentText.setText(bar.progress + " / " + bar.targetTotal);
+                percentText.setText(bar.progress + " / " + bar.total);
 
                 prevX = newX;
 
@@ -90,7 +91,7 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
                         bar.progress += child.bar.progress;
                     }
                     progressBar.setProgress(bar.percentProgress());
-                    percentText.setText(bar.progress + " / " + bar.targetTotal);
+                    percentText.setText(bar.progress + " / " + bar.total);
                 }
             }
         }
@@ -114,7 +115,10 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
                 popup.setOnMenuItemClickListener(item -> {
                     switch (item.getItemId()) {
                         case R.id.menu_edit:
-                            // TODO
+                            Intent intent = new Intent(context, EditBarActivity.class);
+                            intent.putExtra("barId", boundBar.bar.uid);
+                            ((MainActivity)context)
+                                .startActivityForResult(intent, MainActivity.EditBarActivityRequest);
                             return true;
                         case R.id.menu_delete:
                             for (ResponsiveBar child : childBars) {
@@ -174,13 +178,15 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
         }
     }
 
+    private final Context context;
     private final LayoutInflater inflater;
     private List<Bar> bars;
     private Map<Long, List<Bar>> childrenMap;
 
     private BarViewModel viewModel;
 
-    BarListAdapter(Context context, BarViewModel vm) {
+    BarListAdapter(Context context_, BarViewModel vm) {
+        context = context_;
         inflater = LayoutInflater.from(context);
         viewModel = vm;
     }

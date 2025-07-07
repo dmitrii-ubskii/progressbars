@@ -11,11 +11,11 @@ public class Bar {
 
     public String title;
     public int progress;
-    public int targetTotal;
+    public int total;
     public int listPosition;
     public Long parent; // null if this is a main bar
 
     public int percentProgress() {
-        return 100 * progress / targetTotal;
+        return 100 * progress / total;
     }
 }

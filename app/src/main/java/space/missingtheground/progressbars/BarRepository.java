@@ -35,9 +35,12 @@ class BarRepository {
         });
     }
 
-    void update(Bar bar) {
+    void update(Bar bar, Runnable callback) {
         BarDatabase.databaseWriteExecutor.execute(() -> {
             barDao.update(bar);
+            if (callback != null) {
+                callback.run();
+            }
         });
     }
 

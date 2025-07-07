@@ -53,7 +53,17 @@ public class EditBarActivity extends AppCompatActivity {
     }
 
     private void loadBarForEditing(long id) {
-        // TODO
+        BarDatabase.databaseWriteExecutor.execute(() -> {
+            Bar bar = db.barDao().getById(id);
+            if (bar != null) {
+                runOnUiThread(() -> {
+                    titleField.setText(bar.title);
+                    progressField.setText(String.valueOf(bar.progress));
+                    totalField.setText(String.valueOf(bar.total));
+                    // TODO children
+                });
+            }
+        });
     }
 
     private final TextWatcher progressWatcher = new TextWatcher() {
@@ -141,6 +151,7 @@ public class EditBarActivity extends AppCompatActivity {
         }
 
         Bundle bar = new Bundle();
+        bar.putLong("uid", barId);
         bar.putString("title", title);
         bar.putInt("progress", progress);
         bar.putInt("total", total);

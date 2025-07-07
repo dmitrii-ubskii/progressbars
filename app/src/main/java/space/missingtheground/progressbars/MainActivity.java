@@ -21,7 +21,7 @@ import static android.view.MotionEvent.*;
 public class MainActivity extends AppCompatActivity {
     private BarViewModel viewModel;
 
-    private final int EditBarActivityRequest = 1;
+    static final int EditBarActivityRequest = 1;
     private BarListAdapter adapter;
 
     @Override
@@ -69,26 +69,37 @@ public class MainActivity extends AppCompatActivity {
             }
             Bar mainBar = unbundle(barData);
             mainBar.listPosition = adapter.getItemCount();
-            viewModel.insert(mainBar, () -> {
-                List<Bundle> children = barData.getParcelableArrayList("children");
-                if (children != null) {
-                    for (int i = 0; i < children.size(); i++) {
-                        Bar child = unbundle(children.get(i));
-                        child.parent = mainBar.uid;
-                        child.listPosition = i;
-                        viewModel.insert(child);
-                    }
-                }
-            });
+            List<Bundle> children = barData.getParcelableArrayList("children");
+            if (mainBar.uid == 0) {
+                viewModel.insert(mainBar, () -> insertBarChildren(mainBar.uid, children));
+            } else {
+                viewModel.update(mainBar, () -> insertBarChildren(mainBar.uid, children));
+            }
         }
     }
 
     Bar unbundle(Bundle bundle) {
         Bar bar = new Bar();
+        bar.uid = bundle.getLong("uid", 0);
         bar.title = bundle.getString("title", "Untitled");
         bar.progress = bundle.getInt("progress", 0);
-        bar.targetTotal = bundle.getInt("total", 100);
+        bar.total = bundle.getInt("total", 100);
         return bar;
+    }
+
+    void insertBarChildren(long parentId, List<Bundle> children) {
+        if (children != null) {
+            for (int i = 0; i < children.size(); i++) {
+                Bar child = unbundle(children.get(i));
+                child.parent = parentId;
+                child.listPosition = i;
+                if (child.uid == 0) {
+                    viewModel.insert(child);
+                } else {
+                    viewModel.update(child);
+                }
+            }
+        }
     }
 
     class TouchListener implements RecyclerView.OnItemTouchListener {
