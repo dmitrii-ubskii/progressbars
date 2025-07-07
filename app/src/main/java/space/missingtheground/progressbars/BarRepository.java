@@ -35,6 +35,12 @@ class BarRepository {
         });
     }
 
+    void deleteById(long id) {
+        BarDatabase.databaseWriteExecutor.execute(() -> {
+            barDao.deleteById(id);
+        });
+    }
+
     void update(Bar bar, Runnable callback) {
         BarDatabase.databaseWriteExecutor.execute(() -> {
             barDao.update(bar);

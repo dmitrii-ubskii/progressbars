@@ -33,6 +33,10 @@ public class BarViewModel extends AndroidViewModel {
         repository.delete(bar);
     }
 
+    public void deleteById(long id) {
+        repository.deleteById(id);
+    }
+
     public void update(Bar bar) {
         repository.update(bar, null);
     }

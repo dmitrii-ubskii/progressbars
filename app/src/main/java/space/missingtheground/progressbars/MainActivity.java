@@ -69,11 +69,17 @@ public class MainActivity extends AppCompatActivity {
             }
             Bar mainBar = unbundle(barData);
             mainBar.listPosition = adapter.getItemCount();
+
             List<Bundle> children = barData.getParcelableArrayList("children");
             if (mainBar.uid == 0) {
                 viewModel.insert(mainBar, () -> insertBarChildren(mainBar.uid, children));
             } else {
                 viewModel.update(mainBar, () -> insertBarChildren(mainBar.uid, children));
+            }
+
+            List<Integer> deleted = barData.getIntegerArrayList("deleted");
+            for (int id : deleted) {
+                viewModel.deleteById((long)id);
             }
         }
     }

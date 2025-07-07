@@ -1,5 +1,6 @@
 package space.missingtheground.progressbars;
 
+import java.util.List;
 import java.util.ArrayList;
 
 import android.content.Intent;
@@ -24,6 +25,8 @@ public class EditBarActivity extends AppCompatActivity {
 
     private boolean isEditMode = false;
     private long barId = 0;
+    private List<Long> childIds = new ArrayList<>();
+    private ArrayList<Integer> deleted = new ArrayList<>();
     private BarDatabase db;
 
     @Override
@@ -46,7 +49,7 @@ public class EditBarActivity extends AppCompatActivity {
             loadBarForEditing(barId);
         }
 
-        addChildButton.setOnClickListener(v -> this.addChildRow());
+        addChildButton.setOnClickListener(v -> this.addChildRow(0));
 
         final FloatingActionButton saveButton = findViewById(R.id.button_save);
         saveButton.setOnClickListener(v -> saveBar());
@@ -60,8 +63,20 @@ public class EditBarActivity extends AppCompatActivity {
                     titleField.setText(bar.title);
                     progressField.setText(String.valueOf(bar.progress));
                     totalField.setText(String.valueOf(bar.total));
-                    // TODO children
                 });
+                for (Bar child : db.barDao().getChildren(id)) {
+                    runOnUiThread(() -> {
+                        View row = addChildRow(child.uid);
+
+                        EditText childTitle = row.findViewById(R.id.edit_child_title);
+                        EditText childProgress = row.findViewById(R.id.edit_child_progress);
+                        EditText childTotal = row.findViewById(R.id.edit_child_total);
+
+                        childTitle.setText(child.title);
+                        childProgress.setText(String.valueOf(child.progress));
+                        childTotal.setText(String.valueOf(child.total));
+                    });
+                }
             }
         });
     }
@@ -74,7 +89,7 @@ public class EditBarActivity extends AppCompatActivity {
         @Override public void afterTextChanged(Editable s) {}
     };
 
-    private void addChildRow() {
+    private View addChildRow(long childId) {
         View row = LayoutInflater.from(this).inflate(R.layout.child_input_row, childList, false);
 
         EditText childProgress = row.findViewById(R.id.edit_child_progress);
@@ -84,13 +99,22 @@ public class EditBarActivity extends AppCompatActivity {
         childProgress.addTextChangedListener(progressWatcher);
         childTotal.addTextChangedListener(progressWatcher);
 
+        int idx = childIds.size();
+
         deleteButton.setOnClickListener(v -> {
+            if (childIds.get(idx) != 0) {
+                deleted.add(childIds.get(idx).intValue());
+            }
+            childIds.remove(idx);
             childList.removeView(row);
             updateMainBarProgress();
         });
 
+        childIds.add(childId);
         childList.addView(row);
         updateMainBarProgress();
+
+        return row;
     }
 
     private void updateMainBarProgress() {
@@ -144,6 +168,7 @@ public class EditBarActivity extends AppCompatActivity {
                 ((EditText) child.findViewById(R.id.edit_child_total)).getText().toString()
             );
             Bundle childBar = new Bundle();
+            childBar.putLong("uid", childIds.get(i));
             childBar.putString("title", childTitle);
             childBar.putInt("progress", childProgress);
             childBar.putInt("total", childTotal);
@@ -156,6 +181,7 @@ public class EditBarActivity extends AppCompatActivity {
         bar.putInt("progress", progress);
         bar.putInt("total", total);
         bar.putParcelableArrayList("children", children);
+        bar.putIntegerArrayList("deleted", deleted);
 
         Intent intent = new Intent();
         intent.putExtra("barData", bar);

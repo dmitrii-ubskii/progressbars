@@ -20,13 +20,16 @@ public interface BarDao {
     Bar getById(long id);
 
     @Query("SELECT * FROM bar_database WHERE parent = :parent ORDER BY listPosition ASC")
-    List<Bar> getChildren(int parent);
+    List<Bar> getChildren(long parent);
 
     @Insert
     long insert(Bar bars);
 
     @Delete
     void delete(Bar bar);
+
+    @Query("DELETE FROM bar_database WHERE uid = :id")
+    void deleteById(long id);
 
     @Update
     void update(Bar bar);
