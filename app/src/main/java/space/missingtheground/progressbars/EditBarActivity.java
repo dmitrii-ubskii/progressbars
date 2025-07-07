@@ -23,7 +23,7 @@ public class EditBarActivity extends AppCompatActivity {
     private FloatingActionButton saveButton;
 
     private boolean isEditMode = false;
-    private long barId = -1;
+    private long barId = 0;
     private BarDatabase db;
 
     @Override
@@ -41,7 +41,7 @@ public class EditBarActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("barId")) {
-            barId = intent.getLongExtra("barId", -1);
+            barId = intent.getLongExtra("barId", 0);
             isEditMode = true;
             loadBarForEditing(barId);
         }

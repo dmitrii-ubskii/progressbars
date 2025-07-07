@@ -11,6 +11,7 @@ import java.util.Map;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -23,6 +24,7 @@ import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import static android.view.MotionEvent.*;
@@ -64,7 +66,7 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
 
                 float deltaProgress = deltaX / width;
                 swipeAmount += deltaProgress;
-                bar.progress = startProgress + (int)(swipeAmount * bar.total);
+                bar.progress = startProgress + Math.round(swipeAmount * bar.total);
                 bar.progress = Math.max(0, Math.min(bar.total, bar.progress));
 
                 progressBar.setProgress(bar.percentProgress());
@@ -143,8 +145,14 @@ public class BarListAdapter extends RecyclerView.Adapter<BarListAdapter.BarViewH
             childBars = new ArrayList<>();
             childrenContainer.removeAllViews();
             if (children == null) {
+                boundBar.progressBar.setProgressTintList(
+                    ColorStateList.valueOf(ContextCompat.getColor(context, R.color.colorAccent))
+                );
                 childrenContainer.setVisibility(View.GONE);
             } else {
+                boundBar.progressBar.setProgressTintList(
+                    ColorStateList.valueOf(ContextCompat.getColor(context, R.color.colorInactive))
+                );
                 childrenContainer.setVisibility(View.VISIBLE);
                 for (Bar child : children) {
                     View subView = LayoutInflater.from(itemView.getContext())

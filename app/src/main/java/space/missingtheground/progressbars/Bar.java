@@ -16,6 +16,7 @@ public class Bar {
     public Long parent; // null if this is a main bar
 
     public int percentProgress() {
+        if (total == 0) return 0;
         return 100 * progress / total;
     }
 }
