@@ -68,10 +68,10 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             Bar mainBar = unbundle(barData);
-            mainBar.listPosition = adapter.getItemCount();
 
             List<Bundle> children = barData.getParcelableArrayList("children");
             if (mainBar.uid == 0) {
+                mainBar.listPosition = adapter.getItemCount();
                 viewModel.insert(mainBar, () -> insertBarChildren(mainBar.uid, children));
             } else {
                 viewModel.update(mainBar, () -> insertBarChildren(mainBar.uid, children));
