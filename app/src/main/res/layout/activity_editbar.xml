@@ -84,7 +84,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:src="@android:drawable/ic_menu_save"
+        android:src="@drawable/tick"
         android:contentDescription="@string/button_save"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
