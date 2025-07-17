@@ -2,7 +2,7 @@
 
 A simple Android goal tracker.
 
-image::media/screenshot.png[Screenshot]
+image::media/screenshot.png[Screenshot,270]
 
 == What it is
 
